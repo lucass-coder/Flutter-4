@@ -90,7 +90,6 @@ class _TransactionFormState extends State<TransactionForm> {
     String password,
     BuildContext context,
   ) async {
-
     _webClient
         .save(
       transactionCreated,
@@ -101,6 +100,8 @@ class _TransactionFormState extends State<TransactionForm> {
         print('Chegou AQUI');
         Navigator.pop(context);
       }
-    });
+    }).catchError((e){
+      print(e);
+    }) ;
   }
 }
