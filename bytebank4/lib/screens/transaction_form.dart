@@ -20,6 +20,7 @@ class _TransactionFormState extends State<TransactionForm> {
   final TextEditingController _valueController = TextEditingController();
   final TransactionWebClient _webClient = TransactionWebClient();
   final String transactionId = Uuid().v4();
+  bool _estadoEnvio = false;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class _TransactionFormState extends State<TransactionForm> {
                   padding: const EdgeInsets.all(8.0),
                   child: Progress(message: 'Sending...'),
                 ),
-                visible: true,
+                visible: _estadoEnvio,
               ),
               Text(
                 widget.contact.name,
@@ -102,8 +103,14 @@ class _TransactionFormState extends State<TransactionForm> {
     String password,
     BuildContext context,
   ) async {
+    setState(() {
+      _estadoEnvio = true;
+    });
     Transaction transaction = await _send(transactionCreated, password, context);
 
+    // setState(() {
+    //   _estadoEnvio = false;
+    // });
     _mensagemSucessoTransacao(transaction, context);
   }
 
@@ -119,6 +126,7 @@ class _TransactionFormState extends State<TransactionForm> {
   }
 
   Future<Transaction> _send(Transaction transactionCreated, String password, BuildContext context) async {
+    _estadoEnvio = true;
     final Transaction transaction =
     await _webClient.save(transactionCreated, password)
     .catchError((e){
@@ -126,7 +134,15 @@ class _TransactionFormState extends State<TransactionForm> {
     }, test: (e) => e is Exception)
         .catchError((e) {
    _showFailureMessage(context, message: e.message);
-    }, test: (e) => e is HttpException);
+    }, test: (e) => e is HttpException).catchError((e){
+
+    }).whenComplete((){
+      setState(() {
+        _estadoEnvio = false;
+      });
+    });
+
+
     return transaction;
   }
 
