@@ -1,3 +1,4 @@
+import 'package:bytebank2/components/response_dialog.dart';
 import 'package:bytebank2/components/transaction_auth_dialog.dart';
 import 'package:bytebank2/http/webclients/transaction_webclient.dart';
 import 'package:bytebank2/models/contact.dart';
@@ -97,11 +98,14 @@ class _TransactionFormState extends State<TransactionForm> {
     )
         .then((transaction) {
       if (transaction != null) {
-        print('Chegou AQUI');
-        Navigator.pop(context);
+        showDialog(context: context, builder: (contextDialog){
+          return SuccessDialog('Transação efetuada com Sucesso');
+        }).then((value) => Navigator.pop(context));
       }
     }).catchError((e){
-      print(e);
-    }) ;
+      showDialog(context: context, builder: (contextDialog){
+        return FailureDialog(e.message);
+      });
+    }, test: (e) => e is Exception) ;
   }
 }

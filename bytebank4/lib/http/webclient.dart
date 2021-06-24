@@ -13,7 +13,7 @@ final Client client = InterceptedClient.build(
 );
 
 final url = Uri.http(
-  '192.168.0.44:8080',
+  '192.168.0.50:8080',
   'transactions',
 );
 
