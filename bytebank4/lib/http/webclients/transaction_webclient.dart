@@ -14,7 +14,7 @@ class TransactionWebClient {
   Future<Transaction> save(Transaction transaction, String password) async {
     
     await Future.delayed(Duration(seconds: 10));
-    
+
 
     final String transactionJson = jsonEncode(transaction.toJson());
 
@@ -24,11 +24,31 @@ class TransactionWebClient {
           'password': password,
         },
         body: transactionJson,
-    ).timeout(Duration(seconds: 5));
+    ).timeout(Duration(seconds: 2));
 
-    if(response.statusCode == 200){
-      return _toTransaction(response);
+    switch (response.statusCode) {
+      case 200:
+      case 201:
+      case 202:
+        return _toTransaction(response);
+
+      case 401:
+        throw HttpException(response.body);
+
+      case 400:
+        throw HttpException('there was an error submitting transaction');
+
+      case 409:
+        throw HttpException('transaction always exists');
+
+      default:
+        throw HttpException(
+            'there was an unknown error  while submitting transaction');
     }
+
+    // if(response.statusCode == 200){
+    //   return _toTransaction(response);
+    // }
     _throwHttpError(response.statusCode);
 
     return _toTransaction(response);
@@ -46,6 +66,7 @@ class TransactionWebClient {
     // Varre o Json decodificado extraindo o elemento, que representa o mapa que vai ter a cha String
       final Map<String, dynamic> contactJson = transactionJson['contact'];
       final Transaction transaction = Transaction(
+        transactionJson['id'],
     //e valores dinâmicos
         transactionJson['value'],
         Contact(
@@ -63,6 +84,7 @@ class TransactionWebClient {
     Map<String, dynamic> json = jsonDecode(response.body);
     final Map<String, dynamic> contactJson = json['contact'];
     return Transaction(
+      json['id'],
       json['value'],
       Contact(
         0,
