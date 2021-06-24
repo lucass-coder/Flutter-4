@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:bytebank2/http/webclient.dart';
 import 'package:bytebank2/models/contact.dart';
 import 'package:bytebank2/models/transaction.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart';
 
 class TransactionWebClient {
@@ -24,15 +22,16 @@ class TransactionWebClient {
         },
         body: transactionJson);
 
-    if(response.statusCode == 400){
-      throw Exception('Falha na autenticação');
+    if(response.statusCode == 200){
+      return _toTransaction(response);
     }
-
-    if(response.statusCode == 401){
-      throw Exception('Aqui tem um ERRO submitting transaction (401)!!');
-    }
+    _throwHttpError(response.statusCode);
 
     return _toTransaction(response);
+  }
+
+  void _throwHttpError(int statusCode) {
+      throw Exception(_statusCodeResponses[statusCode]);
   }
 
   List<Transaction> _toTransactions(Response response) {
@@ -69,5 +68,9 @@ class TransactionWebClient {
     );
   }
 
+  static final Map<int, String> _statusCodeResponses = {
+    400 : 'Falha na autenticação',
+    401 : 'Aqui tem um ERRO submitting transaction (401)!!'
+  };
 
 }
